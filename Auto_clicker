@@ -1,0 +1,70 @@
+(function() {
+    'use strict';
+
+    // Set up default values
+    const defaultKeys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'Right Shift', 'Left Shift', 'Space'];
+    const defaultDelay = 50;
+    let keys = GM_getValue('keys', defaultKeys);
+    let delay = GM_getValue('delay', defaultDelay);
+    let isClicking = false;
+
+    // Create the custom menu
+    GM_registerMenuCommand('Set Keys', function() {
+        let newKeys = prompt('Enter keys (separated by commas):', keys.join(','));
+        if (newKeys !== null) {
+            keys = newKeys.split(',').map(key => key.trim());
+            GM_setValue('keys', keys);
+        }
+    });
+
+    GM_registerMenuCommand('Set Delay', function() {
+        let newDelay = prompt('Enter delay (in milliseconds):', delay);
+        if (newDelay !== null) {
+            delay = parseInt(newDelay);
+            GM_setValue('delay', delay);
+        }
+    });
+
+    GM_registerMenuCommand('Start Clicker', function() {
+        if (!isClicking) {
+            isClicking = true;
+            GM_notification({title: 'Keyboard Clicker', text: 'Clicker started.', timeout: 2000});
+            clickKeys();
+        }
+    });
+
+    GM_registerMenuCommand('Stop Clicker', function() {
+        if (isClicking) {
+            isClicking = false;
+            GM_notification({title: 'Keyboard Clicker', text: 'Clicker stopped.', timeout: 2000});
+        }
+    });
+
+    // Add event listener for hotkeys
+    document.addEventListener('keydown', function(e) {
+        const key = e.key;
+        if (keys.includes(key) && isClicking) {
+            clickKey(key, delay);
+        }
+    });
+
+    function clickKeys() {
+        keys.forEach(key => {
+            if (isClicking) {
+                clickKey(key, delay);
+            }
+        });
+    }
+
+    function clickKey(key, delay) {
+        let event = new KeyboardEvent('keydown', {key: key});
+        document.dispatchEvent(event);
+        setTimeout(() => {
+            event = new KeyboardEvent('keyup', {key: key});
+            document.dispatchEvent(event);
+        }, delay);
+    }
+
+    // Notify user that the script has started
+    GM_notification({title: 'Keyboard Clicker', text: 'Script has started.', timeout: 2000});
+})();
